@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id            String    @id @default(cuid())
+  name          String?
+  email         String?   @unique
+  emailVerified DateTime?
+  image         String?
+  role          String    @default("STUDENT")
+  
+  // Profile Data
+  college       String?
+  rollNumber    String?
+  cgpa          Float?
+  attendance    Float?
+  backlogs      Boolean   @default(false)
+  
+  // Relationships
+  skills        Skill[]
+  projects      Project[]
+  roadmaps      Roadmap[]
+  sessions      InterviewSession[]
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model Skill {
+  id          String   @id @default(cuid())
+  name        String
+  category    String   // TECHNICAL, SOFT, TOOLS
+  proficiency Int      // 1-5 scale
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Project {
+  id          String   @id @default(cuid())
+  title       String
+  description String
+  githubUrl   String?
+  liveUrl     String?
+  status      String   @default("IN_PROGRESS")
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Roadmap {
+  id          String   @id @default(cuid())
+  targetRole  String
+  progress    Int      @default(0) // Percentage
+  tasks       Task[]
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Task {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  completed   Boolean  @default(false)
+  roadmapId   String
+  roadmap     Roadmap  @relation(fields: [roadmapId], references: [id], onDelete: Cascade)
+}
+
+model InterviewSession {
+  id          String   @id @default(cuid())
+  targetRole  String
+  score       Int?
+  feedback    String?
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  createdAt   DateTime @default(now())
+}
